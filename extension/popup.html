@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Umang Mentor AI</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      width: 380px; 
+      height: 500px;
+      display: flex; 
+      flex-direction: column; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 12px 16px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .settings-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .settings-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: white;
+    }
+
+    #chat-window { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 16px; 
+      background: #f8f9fa;
+      scroll-behavior: smooth;
+    }
+
+    .message { 
+      margin-bottom: 12px; 
+      max-width: 85%;
+      word-wrap: break-word;
+    }
+
+    .user-message { 
+      margin-left: auto;
+      background: #667eea;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 18px 18px 4px 18px;
+      text-align: right;
+    }
+
+    .ai-message { 
+      margin-right: auto;
+      background: white;
+      color: #333;
+      padding: 10px 14px;
+      border-radius: 18px 18px 18px 4px;
+      border: 1px solid #e1e5e9;
+      text-align: left;
+      line-height: 1.4;
+    }
+
+    .welcome-message {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      margin: 20px 0;
+    }
+
+    #controls { 
+      display: flex; 
+      padding: 12px 16px; 
+      border-top: 1px solid #e1e5e9;
+      background: white;
+      gap: 8px;
+      align-items: center;
+    }
+
+    #user-input { 
+      flex: 1; 
+      padding: 10px 14px;
+      border: 2px solid #e1e5e9;
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    #user-input:focus {
+      border-color: #667eea;
+    }
+
+    #send-btn { 
+      padding: 10px 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+
+    #send-btn:hover:not(:disabled) {
+      background: #5a6fd8;
+    }
+
+    #send-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    #loading { 
+      display: none; 
+      font-size: 14px; 
+      color: #666;
+      text-align: center;
+      padding: 8px;
+      font-style: italic;
+    }
+
+    .settings-panel {
+      display: none;
+      padding: 16px;
+      background: white;
+    }
+
+    .settings-panel h3 {
+      margin-bottom: 12px;
+      color: #333;
+    }
+
+    .api-key-input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e1e5e9;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-family: monospace;
+    }
+
+    .save-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .save-btn:hover {
+      background: #218838;
+    }
+
+    .back-btn {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 8px;
+    }
+
+    .back-btn:hover {
+      background: #5a6268;
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 8px 0;
+      border: 1px solid #f5c6cb;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 8px 0;
+      border: 1px solid #c3e6cb;
+    }
+
+    /* Image upload styles */
+    #image-upload-label { display: flex; align-items: center; cursor: pointer; margin-right: 8px; }
+    #image-upload-label span { margin-left: 4px; color: #667eea; font-size: 18px; }
+    #image-upload { display: none; }
+    .image-preview-list { display: flex; gap: 6px; margin-top: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+    .image-preview { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; border: 1px solid #e1e5e9; position: relative; }
+    .remove-image-btn { position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* Enhanced AI response rendering */
+    .ai-step, .ai-code, .ai-list, .ai-set {
+      overflow-wrap: break-word;
+      word-break: break-word;
+      max-width: 100%;
+    }
+
+    .ai-step { background: #f1f5ff; border-left: 4px solid #667eea; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-weight: 500; }
+    .ai-code { background: #222; color: #fff; font-family: 'Fira Mono', 'Consolas', monospace; padding: 8px 12px; border-radius: 6px; margin: 8px 0; font-size: 13px; overflow-x: auto; }
+    .ai-list { margin: 8px 0 8px 18px; padding-left: 0; }
+    .ai-list li { margin-bottom: 4px; }
+
+    .ai-answer {
+      background: #e6ffe6;
+      border-left: 4px solid #28a745;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin: 16px 0 8px 0;
+      font-weight: 600;
+      color: #155724;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      max-width: 100%;
+    }
+
+    .chem-reaction {
+      background: #f4f8ff;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 8px 0;
+      font-size: 15px;
+      color: #222;
+      display: block;
+      overflow-x: auto;
+    }
+    .ai-section {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 14px 0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .ai-section-title {
+      font-weight: bold;
+      color: #2d3a4a;
+      margin-bottom: 6px;
+      font-size: 1.08em;
+    }
+    .ai-section, .ai-answer {
+      padding-left: 12px;
+      padding-right: 12px;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+    }
+    .ai-section ol, .ai-section ul, .ai-answer ol, .ai-answer ul {
+      margin-left: 24px;
+      padding-left: 18px;
+    }
+    .edit-btn {
+      background: #f4f4f4;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 8px;
+      cursor: pointer;
+      padding: 2px 8px;
+    }
+    .clear-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      padding: 6px 14px;
+      margin: 8px 0 0 8px;
+      cursor: pointer;
+      float: right;
+    }
+
+    .ai-physics {
+      background: #e6f0ff;
+      border-left: 4px solid #3399ff;
+      color: #1a3557;
+    }
+    .ai-chemistry {
+      background: #e6ffe6;
+      border-left: 4px solid #28a745;
+      color: #155724;
+    }
+    .ai-math {
+      background: #ffe6f3;
+      border-left: 4px solid #e75480;
+      color: #7a2952;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎓 Umang Mentor AI</h1>
+    <button class="settings-btn" id="settings-btn">⚙️</button>
+    <button class="clear-btn" id="clear-chat-btn">🗑️ Clear Chat</button>
+  </div>
+
+  <div class="main-content">
+    <div id="chat-window">
+      <div class="welcome-message">
+        👋 Welcome! I'm your JEE & Board exam mentor. Ask me anything about Physics, Chemistry, or Mathematics!
+      </div>
+    </div>
+
+    <div id="loading">🤔 Thinking...</div>
+
+    <div id="controls">
+      <label id="image-upload-label" title="Attach images (max 8)">
+        <input type="file" id="image-upload" accept="image/*" multiple />
+        <span>🖼️</span>
+      </label>
+      <div class="image-preview-list" id="image-preview-list"></div>
+      <input id="user-input" placeholder="Ask your question..." autofocus />
+      <button id="send-btn">➤</button>
+    </div>
+  </div>
+
+  <div class="settings-panel" id="settings-panel">
+    <h3>⚙️ Settings</h3>
+    <p style="margin-bottom: 12px; color: #666; font-size: 14px;">
+      Enter your OpenRouter API key to get started:
+    </p>
+    <input 
+      type="password" 
+      id="api-key-input" 
+      class="api-key-input" 
+      placeholder="sk-or-v1-..."
+    />
+    <div id="settings-message"></div>
+    <button class="save-btn" id="save-btn">💾 Save</button>
+    <button class="back-btn" id="back-btn">← Back</button>
+  </div>
+
+  <script src="libs/marked.min.js"></script>
+  <script src="libs/katex.min.js"></script>
+  <script src="libs/mhchem.min.js"></script>
+  <link rel="stylesheet" href="libs/katex.min.css">
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
